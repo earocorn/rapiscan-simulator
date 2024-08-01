@@ -8,9 +8,6 @@ import java.awt.event.ActionListener;
 public class InputComponent extends JPanel implements ActionListener {
 
     private static final String[] labels = {"File Name", "Port", "CSV Line"};
-//    JTextField portInput;
-//    JTextField fileNameInput;
-//    JTextField currentCsvLine;
     JTextField[] fields;
     JButton startButton;
     public InputComponent(){
@@ -32,25 +29,15 @@ public class InputComponent extends JPanel implements ActionListener {
             inputPanel.add(fields[i]);
         }
 
-//        portInput = new JTextField();
-//        fileNameInput = new JTextField();
-//        this.add(fileNameInput);
-//        this.add(portInput);
-
         JPanel buttonContainer = new JPanel();
-//        buttonContainer.setLayout(new GridBagLayout());
 
         startButton = new JButton("Start");
-        startButton.addActionListener(e -> System.out.println("Hey"));
+        startButton.addActionListener(this);
 
         buttonContainer.add(startButton);
 
         add(inputPanel);
         add(buttonContainer);
-//
-//        this.add(startButton);
-//        this.getPortInput().grabFocus();
-//        this.getFileNameInput().grabFocus();
 
     }
 
@@ -74,22 +61,24 @@ public class InputComponent extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
+        if(e.getSource() == startButton){
+            handleStartButton();
+        }
     }
 
-    //    public JTextField getPortInput() {
-//        return portInput;
-//    }
-//
-//    public void setPortInput(JTextField portInput) {
-//        this.portInput = portInput;
-//    }
-//
-//    public JTextField getFileNameInput() {
-//        return fileNameInput;
-//    }
-//
-//    public void setFileNameInput(JTextField fileNameInput) {
-//        this.fileNameInput = fileNameInput;
-//    }
+    private void handleStartButton(){
+        System.out.print("Hey");
+    }
+    public boolean isNumeric(String text){
+        if(text == null || text.trim().equals("")){
+            return false;
+        }
+        for( int i=0; i<text.length(); i++){
+            if(!Character.isDigit(text.charAt(i))){
+                return false;
+            }
+        }
+        return true;
+
+    }
 }
