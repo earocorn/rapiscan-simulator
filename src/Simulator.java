@@ -74,7 +74,7 @@ public class Simulator {
         });
         writerThread.start();
     }
-    
+
     public void stop() {
         synchronized (this) {
             continueProcessing = false;
