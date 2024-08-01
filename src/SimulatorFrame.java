@@ -28,4 +28,8 @@ public class SimulatorFrame extends JFrame {
         setVisible(true);
     }
 
+    public SimulatorPanel getSimulatorPanel() {
+        return simulatorPanel;
+    }
+
 }

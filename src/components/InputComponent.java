@@ -5,12 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class InputComponent extends JPanel implements ActionListener {
+public class InputComponent extends JPanel {
 
     private static final String[] labels = {"File Name", "Port", "CSV Line"};
-//    JTextField portInput;
-//    JTextField fileNameInput;
-//    JTextField currentCsvLine;
     JTextField[] fields;
     JButton startButton;
     public InputComponent(){
@@ -20,11 +17,12 @@ public class InputComponent extends JPanel implements ActionListener {
         inputPanel.setLayout(new GridLayout(0,2,5,5));
 
         for(int i=0; i< fields.length; i++){
-            fields[i] = new JTextField(10);
+            fields[i] = new JTextField(20);
 
             switch(i){
                 case 2:
                     fields[i].setEnabled(false);
+                    fields[i].setDisabledTextColor(Color.RED);
                     break;
                 default: break;
             }
@@ -32,25 +30,14 @@ public class InputComponent extends JPanel implements ActionListener {
             inputPanel.add(fields[i]);
         }
 
-//        portInput = new JTextField();
-//        fileNameInput = new JTextField();
-//        this.add(fileNameInput);
-//        this.add(portInput);
-
         JPanel buttonContainer = new JPanel();
-//        buttonContainer.setLayout(new GridBagLayout());
 
         startButton = new JButton("Start");
-        startButton.addActionListener(e -> System.out.println("Hey"));
 
         buttonContainer.add(startButton);
 
         add(inputPanel);
         add(buttonContainer);
-//
-//        this.add(startButton);
-//        this.getPortInput().grabFocus();
-//        this.getFileNameInput().grabFocus();
 
     }
 
@@ -60,36 +47,14 @@ public class InputComponent extends JPanel implements ActionListener {
     public JTextField getPortInput(){
         return fields[1];
     }
-
+    public JTextField getCSVLineField(){ return fields[2]; }
     public JButton getStartButton() {
         return startButton;
     }
-
 
     public void clearInput(){
        for(int i=0; i< fields.length; i++){
            fields[i].setText("");
        }
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-
-    }
-
-    //    public JTextField getPortInput() {
-//        return portInput;
-//    }
-//
-//    public void setPortInput(JTextField portInput) {
-//        this.portInput = portInput;
-//    }
-//
-//    public JTextField getFileNameInput() {
-//        return fileNameInput;
-//    }
-//
-//    public void setFileNameInput(JTextField fileNameInput) {
-//        this.fileNameInput = fileNameInput;
-//    }
 }

@@ -16,6 +16,9 @@ public class Simulator {
     OutputStream outputStream;
     PrintWriter printWriter;
 
+    String currentMessage;
+    List<MessageListener> listeners;
+
     // File stuff
     File inputFile;
     static List<String> fastCounts = new ArrayList<>() {
@@ -31,10 +34,10 @@ public class Simulator {
 
     public Simulator(int port, String filepath) throws IOException {
         serverSocket = new ServerSocket(port);
-        System.out.println("Server started...");
+        System.out.println("Server started");
 
         socket = new Socket("localhost", port);
-        System.out.println("Client connected...");
+        System.out.println("Client connected");
 
         // Start server
         continueProcessing = true;
@@ -44,6 +47,8 @@ public class Simulator {
         if(!inputFile.exists()) {
             throw new IOException("File does not exist!");
         }
+
+        listeners = new ArrayList<>();
 
         Thread writerThread = new Thread(
         () -> {
@@ -56,15 +61,20 @@ public class Simulator {
 
                 String msgLine = bufferedReader.readLine();
                 while(msgLine != null) {
-                    String timeRemoved = msgLine.substring(0, msgLine.length()-13);
+                    currentMessage = msgLine.substring(0, msgLine.length()-13);
 
-                    String messageType = timeRemoved.substring(0, 2);
+                    String messageType = currentMessage.substring(0, 2);
                     if(fastCounts.contains(messageType)) {
                         Thread.sleep(200);
                     } else {
                         Thread.sleep(2500);
                     }
-                    printWriter.println(timeRemoved);
+
+                    printWriter.println(currentMessage);
+
+                    for(MessageListener listener : listeners) {
+                        listener.onNewMessage(currentMessage);
+                    }
 
                     msgLine = bufferedReader.readLine();
                 }
@@ -75,10 +85,25 @@ public class Simulator {
         writerThread.start();
     }
 
+    public boolean isRunning() {
+        return !socket.isClosed();
+    }
+
     public void stop() {
         synchronized (this) {
             continueProcessing = false;
+            try {
+                socket.close();
+                serverSocket.close();
+                System.out.println("Socket closed");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
+    }
+
+    public void addListener(MessageListener listener) {
+        listeners.add(listener);
     }
 
 }

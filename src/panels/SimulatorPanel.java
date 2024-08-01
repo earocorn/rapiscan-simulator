@@ -15,4 +15,8 @@ public class SimulatorPanel extends JPanel {
         setBackground(Color.LIGHT_GRAY);
         add(inputComponent);
     }
+
+    public InputComponent getInputComponent() {
+        return inputComponent;
+    }
 }
