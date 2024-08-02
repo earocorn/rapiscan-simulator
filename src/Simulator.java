@@ -1,23 +1,28 @@
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvException;
+import listeners.ScanListener;
+import listeners.StateListener;
+import models.SimulatorState;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Simulator {
 
+    String filepath;
+    int port;
     boolean continueProcessing;
     ServerSocket serverSocket;
-    Socket socket;
-    OutputStream outputStream;
-    PrintWriter printWriter;
+    Thread writerThread;
 
     String currentMessage;
-    List<MessageListener> listeners;
+    List<ScanListener> scanListeners;
+    List<StateListener> stateListeners;
 
     // File stuff
     File inputFile;
@@ -32,12 +37,68 @@ public class Simulator {
         }
     };
 
-    public Simulator(int port, String filepath) throws IOException {
-        serverSocket = new ServerSocket(port);
-        System.out.println("Server started");
+    public Simulator(int port, String filepath, boolean quickRead) throws IOException {
+        this.port = port;
+        this.filepath = filepath;
 
-        socket = new Socket("localhost", port);
-        System.out.println("Client connected");
+        writerThread = new Thread(
+        () -> {
+            try {
+                System.out.println("Waiting for client connection...");
+                setState(SimulatorState.WAITING);
+
+                Socket socket = serverSocket.accept();
+
+                System.out.println("Client connected");
+                setState(SimulatorState.CONNECTED);
+
+                List<String> lines = Files.readAllLines(Paths.get(filepath), StandardCharsets.UTF_8);
+
+                for (String line : lines) {
+                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+
+                    if(line.length() > 30) {
+                        // Get rid of date at end of line
+                        currentMessage = line.substring(0, line.length()-13) + "\r\n";
+                    } else {
+                        currentMessage = line + "\r\n";
+                    }
+
+                    String messageType = currentMessage.substring(0, 2);
+                    if(quickRead) {
+                        Thread.sleep(100);
+                    } else {
+                        if(fastCounts.contains(messageType)) {
+                            Thread.sleep(200);
+                        } else {
+                            Thread.sleep(1000);
+                        }
+                    }
+
+                    System.out.print(currentMessage);
+                    out.print(currentMessage);
+                    out.flush();
+
+                    for(ScanListener listener : scanListeners) {
+                        listener.onNewScan(currentMessage);
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                setState(SimulatorState.ENDED);
+            }
+        });
+    }
+
+    public void init() {
+        try {
+            serverSocket = new ServerSocket(port, 50, InetAddress.getByName("10.146.49.249"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("Server started");
 
         // Start server
         continueProcessing = true;
@@ -45,55 +106,25 @@ public class Simulator {
         // Get file from filepath
         inputFile = new File(filepath);
         if(!inputFile.exists()) {
-            throw new IOException("File does not exist!");
+            setState(SimulatorState.ERROR);
         }
 
-        listeners = new ArrayList<>();
+        scanListeners = new ArrayList<>();
+        stateListeners = new ArrayList<>();
+    }
 
-        Thread writerThread = new Thread(
-        () -> {
-            try {
-                outputStream = socket.getOutputStream();
-                printWriter = new PrintWriter(outputStream);
-
-                BufferedReader bufferedReader;
-                bufferedReader = new BufferedReader(new FileReader(inputFile));
-
-                String msgLine = bufferedReader.readLine();
-                while(msgLine != null) {
-                    currentMessage = msgLine.substring(0, msgLine.length()-13);
-
-                    String messageType = currentMessage.substring(0, 2);
-                    if(fastCounts.contains(messageType)) {
-                        Thread.sleep(200);
-                    } else {
-                        Thread.sleep(2500);
-                    }
-
-                    printWriter.println(currentMessage);
-
-                    for(MessageListener listener : listeners) {
-                        listener.onNewMessage(currentMessage);
-                    }
-
-                    msgLine = bufferedReader.readLine();
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-        writerThread.start();
+    public void start() {
+        this.writerThread.start();
     }
 
     public boolean isRunning() {
-        return !socket.isClosed();
+        return !serverSocket.isClosed();
     }
 
     public void stop() {
         synchronized (this) {
             continueProcessing = false;
             try {
-                socket.close();
                 serverSocket.close();
                 System.out.println("Socket closed");
             } catch (IOException e) {
@@ -102,8 +133,18 @@ public class Simulator {
         }
     }
 
-    public void addListener(MessageListener listener) {
-        listeners.add(listener);
+    public void addScanListener(ScanListener listener) {
+        scanListeners.add(listener);
+    }
+
+    public void addStateListener(StateListener listener) {
+        stateListeners.add(listener);
+    }
+
+    private void setState(SimulatorState state) {
+        for(StateListener listener : stateListeners) {
+            listener.onStateChange(state);
+        }
     }
 
 }

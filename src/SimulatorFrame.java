@@ -13,7 +13,7 @@ public class SimulatorFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(null);
-        setTitle("Node Simulator!");
+        setTitle("Daily File Replay");
 
         mainPanel = new JPanel();
         simulatorPanel = new SimulatorPanel();

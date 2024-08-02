@@ -1,15 +1,18 @@
 package components;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class InputComponent extends JPanel {
 
-    private static final String[] labels = {"File Name", "Port", "CSV Line"};
+    private static final String[] labels = {"File Name", "Port", "Scan Data"};
     JTextField[] fields;
     JButton startButton;
+    JCheckBox quickReadBox;
+
     public InputComponent(){
 
         JPanel inputPanel = new JPanel();
@@ -31,9 +34,24 @@ public class InputComponent extends JPanel {
         }
 
         JPanel buttonContainer = new JPanel();
+        buttonContainer.setLayout(new GridLayout(3, 1));
 
         startButton = new JButton("Start");
+        quickReadBox = new JCheckBox("Quick Read");
+        JButton openFileButton = new JButton("Choose File");
 
+        openFileButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+            fileChooser.addActionListener(e1 -> {
+                    if(fileChooser.getSelectedFile() != null) {
+                        getFileNameInput().setText(fileChooser.getSelectedFile().getAbsolutePath());
+                    }
+                });
+            fileChooser.showOpenDialog(null);
+        });
+
+        buttonContainer.add(openFileButton);
+        buttonContainer.add(quickReadBox);
         buttonContainer.add(startButton);
 
         add(inputPanel);
@@ -50,6 +68,10 @@ public class InputComponent extends JPanel {
     public JTextField getCSVLineField(){ return fields[2]; }
     public JButton getStartButton() {
         return startButton;
+    }
+
+    public JCheckBox getQuickReadBox() {
+        return quickReadBox;
     }
 
     public void clearInput(){
