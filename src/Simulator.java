@@ -93,7 +93,7 @@ public class Simulator {
 
     public void init() {
         try {
-            serverSocket = new ServerSocket(port, 50, InetAddress.getByName("10.146.49.249"));
+            serverSocket = new ServerSocket(port, 50, InetAddress.getByName("0.0.0.0"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
