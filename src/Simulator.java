@@ -2,7 +2,9 @@ import listeners.ScanListener;
 import listeners.StateListener;
 import models.SimulatorState;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -91,12 +93,8 @@ public class Simulator {
         });
     }
 
-    public void init() {
-        try {
-            serverSocket = new ServerSocket(port, 50, InetAddress.getByName("0.0.0.0"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public void init() throws IOException {
+        serverSocket = new ServerSocket(port, 50, InetAddress.getByName("0.0.0.0"));
 
         System.out.println("Server started");
 

@@ -3,6 +3,7 @@ import models.SimulatorState;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.net.BindException;
 
 public class Main {
     static Simulator simulator;
@@ -42,6 +43,8 @@ public class Main {
 
                     simulator.start();
                 } catch (IOException e) {
+                    if (e instanceof BindException)
+                        message.setMessage(e.getLocalizedMessage() + " : " + input.getPortInput().getText(), Color.RED);
                     throw new RuntimeException(e);
                 }
             }
